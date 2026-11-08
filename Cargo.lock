@@ -738,11 +738,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "card-domain"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "cardgen"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "card-domain",
  "gpui",
  "serde",
  "serde_json",
