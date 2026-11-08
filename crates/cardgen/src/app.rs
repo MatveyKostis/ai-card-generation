@@ -105,12 +105,24 @@ impl CardgenView {
         self.busy = true;
         self.error = None;
         cx.notify();
-        match crate::generate::generate_and_print(&prompt) {
-            Ok(json) => self.card_json = Some(json),
-            Err(error) => self.error = Some(format!("{error:#}")),
-        }
-        self.busy = false;
-        cx.notify();
+        // Round trip runs on gpui's background executor; the busy guard stays
+        // observable so the UI thread never blocks on the model call.
+        cx.spawn(async move |view, cx| {
+            let result = cx
+                .background_executor()
+                .spawn(async move { crate::generate::generate_and_print(&prompt, false) })
+                .await;
+            view.update(cx, |view, cx| {
+                match result {
+                    Ok(json) => view.card_json = Some(json),
+                    Err(error) => view.error = Some(format!("{error:#}")),
+                }
+                view.busy = false;
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
     }
 }
 

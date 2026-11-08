@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use card_domain::{SPEC, SPEC_VERSION};
 
-use card_domain::{Card as CardFile, CardData};
+use card_domain::{Card, CardData};
 
 /// Prompt sent to the model; `prompt` is the user's character description.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -92,7 +92,7 @@ impl ModelClient for StubModelClient {
             modification_date: None,
             extra: serde_json::Map::new(),
         };
-        let card = CardFile::new_v3(data);
+        let card = Card::new_v3(data);
         Ok(GenerateResponse {
             raw: card.to_json()?,
         })
@@ -101,15 +101,15 @@ impl ModelClient for StubModelClient {
 
 /// Extracts a card JSON object from raw model text: direct parse first, then
 /// fenced ```json blocks, then the first balanced `{ ... }` span.
-pub fn extract_card_json(raw: &str) -> Result<CardFile> {
-    if let Ok(card) = serde_json::from_str::<CardFile>(raw.trim()) {
+pub fn extract_card_json(raw: &str) -> Result<Card> {
+    if let Ok(card) = serde_json::from_str::<Card>(raw.trim()) {
         return Ok(card);
     }
     for chunk in raw.split("```") {
         let chunk = chunk.trim();
         let chunk = chunk.strip_prefix("json").unwrap_or(chunk).trim();
         if chunk.starts_with('{')
-            && let Ok(card) = serde_json::from_str::<CardFile>(chunk)
+            && let Ok(card) = serde_json::from_str::<Card>(chunk)
         {
             return Ok(card);
         }
@@ -133,7 +133,7 @@ pub fn extract_card_json(raw: &str) -> Result<CardFile> {
                 depth = depth.saturating_sub(1);
                 if depth == 0
                     && let Some(s) = start
-                    && let Ok(card) = serde_json::from_str::<CardFile>(&raw[s..=i])
+                    && let Ok(card) = serde_json::from_str::<Card>(&raw[s..=i])
                 {
                     return Ok(card);
                 }
