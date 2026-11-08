@@ -2,7 +2,7 @@
 name = "card-domain"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
+license = "MIT"
 
 [dependencies]
 serde = { workspace = true }

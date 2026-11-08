@@ -1,8 +1,7 @@
 use gpui::{
     App, Application, Bounds, Context, FocusHandle, Focusable, KeyBinding, Window, WindowBounds,
-    WindowOptions, actions, div, px, rgb, size, prelude::*,
+    WindowOptions, actions, div, prelude::*, px, rgb, size,
 };
-
 
 actions!(cardgen, [Generate, Quit]);
 
@@ -16,7 +15,10 @@ struct PromptInput {
 
 impl PromptInput {
     fn new(cx: &mut Context<Self>) -> Self {
-        Self { focus_handle: cx.focus_handle(), content: String::new() }
+        Self {
+            focus_handle: cx.focus_handle(),
+            content: String::new(),
+        }
     }
 
     fn on_key_down(
@@ -67,7 +69,11 @@ impl Render for PromptInput {
             .px_3()
             .py_2()
             .text_size(px(14.))
-            .text_color(if placeholder { rgb(0x5c6370) } else { rgb(0xe6e6e6) })
+            .text_color(if placeholder {
+                rgb(0x5c6370)
+            } else {
+                rgb(0xe6e6e6)
+            })
             .child(if placeholder {
                 "Describe a character… (Enter to generate)".to_string()
             } else {
@@ -129,7 +135,11 @@ impl Render for CardgenView {
             .flex_col()
             .gap_2()
             .p_4()
-            .child(div().text_size(px(18.)).child("AI Character Card Generator"))
+            .child(
+                div()
+                    .text_size(px(18.))
+                    .child("AI Character Card Generator"),
+            )
             .child(self.prompt.clone())
             .child(
                 div()
@@ -144,7 +154,12 @@ impl Render for CardgenView {
                         window.dispatch_action(Box::new(Generate), cx);
                     })),
             )
-            .child(div().text_size(px(12.)).text_color(rgb(0x8b949e)).child(status))
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(rgb(0x8b949e))
+                    .child(status),
+            )
             .children(self.card_json.as_ref().map(|json| {
                 div()
                     .id("card-output")
