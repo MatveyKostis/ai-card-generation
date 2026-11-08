@@ -1,0 +1,16 @@
+[package]
+name = "cardgen"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+gpui.workspace = true
+anyhow.workspace = true
+async-trait = "0.1.89"
+serde.workspace = true
+serde_json.workspace = true
+tokio = { version = "1", features = ["rt"] }
+
+[[bin]]
+name = "cardgen"
+path = "src/main.rs"
