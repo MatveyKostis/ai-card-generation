@@ -45,6 +45,11 @@ impl Card {
     }
 
     /// Same payload as a V2 envelope (V3 ⊇ V2, so this round-trips as both).
+    ///
+    /// PNG export (when it lands) will write this exact untrimmed payload into
+    /// the `chara` tEXt chunk, mirroring SillyTavern's writer: the `chara`
+    /// chunk carries the same JSON as `ccv3`, only the envelope flipped to
+    /// V2 — no field trimming, so cards import everywhere.
     pub fn to_v2_envelope(self) -> Self {
         Self {
             spec: "chara_card_v2".into(),
@@ -361,5 +366,55 @@ mod tests {
         });
         let card = Card::from_json_str(&v2.to_string()).unwrap();
         assert_eq!(card.data.group_only_greetings, Vec::<String>::new());
+    }
+
+    #[test]
+    fn non_object_data_is_rejected() {
+        let v = json!({
+            "spec": "chara_card_v3",
+            "spec_version": "3.0",
+            "data": ["not", "an", "object"]
+        });
+        assert!(Card::from_json_str(&v.to_string()).is_err());
+    }
+
+    #[test]
+    fn card_asset_unknown_fields_are_preserved() {
+        let v = json!({
+            "spec": "chara_card_v3",
+            "spec_version": "3.0",
+            "data": {
+                "name": "Aria",
+                "description": "",
+                "personality": "",
+                "scenario": "",
+                "first_mes": "",
+                "mes_example": "",
+                "creator_notes": "",
+                "system_prompt": "",
+                "post_history_instructions": "",
+                "tags": [],
+                "creator": "",
+                "character_version": "",
+                "alternate_greetings": [],
+                "extensions": {},
+                "assets": [
+                    {"type": "icon", "uri": "ccdefault:", "name": "main", "ext": "png",
+                     "custom_key": {"deep": [1, 2]}}
+                ]
+            }
+        });
+        let card = Card::from_json_str(&v.to_string()).unwrap();
+        let asset = &card.data.assets.as_ref().unwrap()[0];
+        assert_eq!(
+            asset.extra.get("custom_key"),
+            Some(&json!({"deep": [1, 2]}))
+        );
+        // Survives re-serialization verbatim, byte-identical round-trip.
+        let out: Value = serde_json::from_str(&card.to_json().unwrap()).unwrap();
+        assert_eq!(
+            out["data"]["assets"][0]["custom_key"],
+            json!({"deep": [1, 2]})
+        );
     }
 }
