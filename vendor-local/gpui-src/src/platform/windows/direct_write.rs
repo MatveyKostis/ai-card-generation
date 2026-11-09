@@ -1088,11 +1088,12 @@ impl DirectWriteState {
         };
 
         // TEXT-SYSTEM PATCH (cardgen): emoji shaders may be None when creation
-        // failed at init (patched fallback); skip rasterization instead of panicking.
+        // failed at init (patched fallback); bail so rasterize_glyph falls back
+        // to the monochrome emoji path instead of panicking.
         let (Some(vertex_shader), Some(pixel_shader)) =
             (&gpu_state.vertex_shader, &gpu_state.pixel_shader)
         else {
-            return Ok(());
+            anyhow::bail!("emoji shaders unavailable (creation failed at init)");
         };
         let device_context = &gpu_state.device_context;
         unsafe { device_context.IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP) };

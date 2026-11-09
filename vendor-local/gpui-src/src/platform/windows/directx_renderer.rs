@@ -1555,7 +1555,18 @@ pub(crate) mod shader_resources {
     }
 
     #[cfg(not(debug_assertions))]
-    include!(concat!(env!("OUT_DIR"), "/shaders_bytes.rs"));
+    pub(crate) mod prebuilt_shaders {
+        // TEXT-SYSTEM PATCH (cardgen): cross-builds from Linux can't run fxc, so the
+        // build script can't regenerate OUT_DIR/shaders_bytes.rs. These bytes come from
+        // the released fxc-style DXBC set captured in vendor-local/gpui-src/
+        // shaders_bytes.rs (chunk table SFI0/ISG1/OSG1/PSV0/STAT/HASH/DXIL, DXC SM6);
+        // GPUState::new tolerates a device that rejects them (falls back to
+        // monochrome emoji) and the main renderer requires DXIL-capable d3d11
+        // (Win10 1703+), the same floor the DirectWrite system already requires.
+        include!("../../../shaders_bytes.rs");
+    }
+    #[cfg(not(debug_assertions))]
+    use prebuilt_shaders::*;
 
     #[cfg(debug_assertions)]
     impl ShaderModule {
