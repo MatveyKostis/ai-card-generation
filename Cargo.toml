@@ -18,5 +18,10 @@ debug = 0
 
 # xattr 0.2.3 references libc::ENOATTR (removed in newer libc); local patched
 # copy maps it to ENODATA, its Linux equivalent.
+# gpui 0.2.2: DirectWrite GPUState::new treats emoji-shader creation failure as
+# fatal during platform init ("Error creating DirectWriteTextSystem"); the
+# patched copy degrades to monochrome-only emoji rendering instead (see
+# vendor-local/gpui-src/README-cardgen.md).
 [patch.crates-io]
 xattr = { path = "vendor-local/xattr-src" }
+gpui = { path = "vendor-local/gpui-src" }
