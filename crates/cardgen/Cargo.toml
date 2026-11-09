@@ -12,6 +12,9 @@ serde_json.workspace = true
 tokio = { version = "1", features = ["rt", "rt-multi-thread"] }
 card-domain = { path = "../card-domain" }
 
+[build-dependencies]
+embed-resource = "3.0"
+
 [[bin]]
 name = "cardgen"
 path = "src/main.rs"
